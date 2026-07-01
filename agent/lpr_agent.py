@@ -122,37 +122,6 @@ def private_ip():
         return "unknown"
 
 
-def check_rtsp(camera_url):
-    if not camera_url:
-        return "not_configured"
-
-    command = [
-        "ffprobe",
-        "-v",
-        "error",
-        "-rtsp_transport",
-        "tcp",
-        "-i",
-        camera_url,
-        "-show_entries",
-        "stream=codec_type",
-        "-of",
-        "csv=p=0",
-    ]
-
-    try:
-        result = subprocess.run(
-            command,
-            check=False,
-            capture_output=True,
-            timeout=8,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return "unreachable"
-
-    return "reachable" if result.returncode == 0 else "unreachable"
-
-
 def latest_plate_seen(snapshot_dir):
     if not snapshot_dir:
         return None
@@ -190,7 +159,7 @@ def build_payload():
         "disk_percent": disk_percent(os.environ.get("DISK_PATH", "/")),
         "temperature_c": temperature_c(),
         "lpr_service": service_status(lpr_service_name),
-        "camera_rtsp": check_rtsp(os.environ.get("CAMERA_RTSP_URL")),
+        "lpr_sensor_status": os.environ.get("LPR_SENSOR_STATUS", "unknown"),
         "teamviewer_status": service_status(remote_service_name),
         "public_ip": os.environ.get("PUBLIC_IP", "unknown"),
         "private_ip": private_ip(),

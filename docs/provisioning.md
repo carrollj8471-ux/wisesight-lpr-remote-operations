@@ -2,7 +2,7 @@
 
 ## Target Device
 
-This flow is intended for NVIDIA Jetson, ARM64 Linux boxes, or small x86 camera servers used at remote LPR locations.
+This flow is intended for NVIDIA Jetson, ARM64 Linux boxes, or small x86 edge hosts used at remote LPR locations.
 
 ## Baseline Steps
 
@@ -12,7 +12,7 @@ This flow is intended for NVIDIA Jetson, ARM64 Linux boxes, or small x86 camera 
 4. Install system updates after validating Jetson package compatibility.
 5. Install Python 3, `ffmpeg`, `curl`, and system monitoring tools.
 6. Install the WiseSight heartbeat agent.
-7. Configure site identity and camera stream settings.
+7. Configure site identity and passive LPR sensor status settings.
 8. Enable remote access through TeamViewer or SSH over VPN.
 9. Register the device with the central operations dashboard.
 
@@ -40,7 +40,7 @@ OPS_SERVER_URL=https://ops.example.com/api/ops/heartbeat
 OPS_AGENT_TOKEN=replace-with-shared-secret
 LPR_SERVICE=lpr-engine
 REMOTE_ACCESS_SERVICE=teamviewerd
-CAMERA_RTSP_URL=rtsp://user:password@camera-ip/stream
+LPR_SENSOR_STATUS=online
 LPR_SNAPSHOT_DIR=/var/lib/wisesight/snapshots
 HEARTBEAT_INTERVAL=60
 ```

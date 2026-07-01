@@ -34,10 +34,9 @@
 
     <div class="header-actions">
         <a class="header-link" href="{{ url_for('operations') }}">Remote Ops</a>
-        <a class="header-link" href="{{ url_for('doorbell') }}">Front Door Live</a>
         <div class="header-status">
             <span class="status-dot"></span>
-            Live Demo
+            Demo Mode
         </div>
     </div>
 
@@ -58,7 +57,7 @@
         </article>
 
         <article class="metric-card">
-            <span>Active Cameras</span>
+            <span>Active Sensors</span>
             <strong>{{ summary.camera_count }}</strong>
         </article>
 
@@ -110,8 +109,8 @@
                             <dd>{{ result['zone'] }}</dd>
                         </div>
                         <div>
-                            <dt>Camera</dt>
-                            <dd>{{ result['camera_name'] or 'Pending camera update' }}</dd>
+                            <dt>LPR Sensor</dt>
+                            <dd>{{ result['camera_name'] or 'Pending sensor update' }}</dd>
                         </div>
                         <div>
                             <dt>Last Seen</dt>
@@ -140,7 +139,7 @@
             <section class="panel camera-panel">
 
                 <div class="panel-heading">
-                    <h2>Camera Network</h2>
+                    <h2>LPR Sensor Network</h2>
                     <span>{{ summary.camera_count }} online</span>
                 </div>
 
@@ -232,7 +231,7 @@
                 {% endfor %}
                 <span>
                     <i class="camera-key"></i>
-                    Camera
+                    LPR Sensor
                 </span>
             </div>
 
@@ -253,7 +252,7 @@
                     <tr>
                         <th>Plate</th>
                         <th>Location</th>
-                        <th>Camera</th>
+                        <th>LPR Sensor</th>
                         <th>Confidence</th>
                         <th>Last Seen</th>
                     </tr>
@@ -267,7 +266,7 @@
                             </a>
                         </td>
                         <td>{{ plate.zone }}</td>
-                        <td>{{ plate.camera_name or 'Pending camera update' }}</td>
+                        <td>{{ plate.camera_name or 'Pending sensor update' }}</td>
                         <td>
                             <span class="confidence">{{ (plate.confidence * 100)|round }}%</span>
                         </td>

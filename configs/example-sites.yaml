@@ -7,7 +7,7 @@ sites:
       - device_id: jetson-j3011-01
         hostname: wisesight-edge-01
         role: lpr-engine
-        camera_rtsp_url_env: CAMERA_RTSP_URL
+        lpr_sensor_status_env: LPR_SENSOR_STATUS
   - site_id: garage-downtown
     site_name: Downtown Parking Garage
     address: 240 Central Garage Road
@@ -15,7 +15,7 @@ sites:
     devices:
       - device_id: mini-pc-north-02
         hostname: wisesight-garage-02
-        role: camera-watchdog
+        role: lpr-health-agent
   - site_id: campus-permit-zone
     site_name: Campus Permit Zone
     address: 88 Permit Enforcement Drive

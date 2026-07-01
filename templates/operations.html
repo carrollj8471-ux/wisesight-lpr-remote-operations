@@ -34,7 +34,6 @@
 
     <div class="header-actions">
         <a class="header-link" href="{{ url_for('index') }}">Plate Lookup</a>
-        <a class="header-link" href="{{ url_for('doorbell') }}">Front Door Live</a>
         <div class="header-status">
             <span class="status-dot"></span>
             Ops Demo
@@ -177,8 +176,8 @@
                         <dd>{{ device.lpr_service or 'unknown' }}</dd>
                     </div>
                     <div>
-                        <dt>Camera</dt>
-                        <dd>{{ device.camera_rtsp or 'unknown' }}</dd>
+                        <dt>LPR Sensor</dt>
+                        <dd>{{ device.lpr_sensor_status or 'unknown' }}</dd>
                     </div>
                     <div>
                         <dt>Remote</dt>

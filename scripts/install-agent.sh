@@ -18,7 +18,7 @@ OPS_SERVER_URL=http://127.0.0.1:5000/api/ops/heartbeat
 OPS_AGENT_TOKEN=
 LPR_SERVICE=lpr-engine
 REMOTE_ACCESS_SERVICE=teamviewerd
-CAMERA_RTSP_URL=
+LPR_SENSOR_STATUS=online
 LPR_SNAPSHOT_DIR=/var/lib/wisesight/snapshots
 HEARTBEAT_INTERVAL=60
 ENV

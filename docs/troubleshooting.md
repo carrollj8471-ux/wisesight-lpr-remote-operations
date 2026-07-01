@@ -19,20 +19,17 @@ Common causes:
 - Agent token mismatch
 - Central API URL misconfigured
 
-## Camera Stream Offline
+## LPR Sensor Not Reporting
 
-Run:
+This project does not connect to cameras or open live feeds. Edge devices report
+passive LPR sensor status through `LPR_SENSOR_STATUS`.
 
-```bash
-bash scripts/check-camera-stream.sh "rtsp://user:password@camera-ip/stream"
-```
+If status is stale or unhealthy:
 
-If the stream fails:
-
-- Confirm camera power and switch port link.
-- Confirm camera IP, credentials, and RTSP path.
-- Test from the LPR device, not only from a laptop.
-- Check whether the camera allows multiple RTSP clients.
+- Confirm the local LPR service is running.
+- Confirm the edge device can reach the central heartbeat API.
+- Review local LPR application logs on the edge device.
+- Validate that `LPR_SENSOR_STATUS` is set by the deployment process or local health wrapper.
 
 ## LPR Service Inactive
 

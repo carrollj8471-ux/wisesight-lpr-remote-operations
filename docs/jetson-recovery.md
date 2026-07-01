@@ -34,12 +34,6 @@ systemctl status lpr-engine --no-pager
 systemctl status teamviewerd --no-pager
 ```
 
-## Validate Camera Reachability
-
-```bash
-bash scripts/check-camera-stream.sh "$CAMERA_RTSP_URL"
-```
-
 ## Validate Device Health Payload
 
 ```bash

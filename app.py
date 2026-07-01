@@ -7,24 +7,6 @@ import time
 
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 
-from scripts.google_doorbell_camera import (
-    DEFAULT_ACCESS_TOKEN,
-    DEFAULT_CLIENT_ID,
-    DEFAULT_CLIENT_SECRET,
-    DEFAULT_CLIENT_SECRET_FILE,
-    DEFAULT_DEVICE_NAME,
-    DEFAULT_PROJECT_ID,
-    DEFAULT_REFRESH_TOKEN,
-    Config,
-    DoorbellError,
-    generate_webrtc_answer,
-    load_env_file,
-    load_oauth_client_file,
-    refresh_access_token,
-)
-
-
-load_env_file()
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -47,13 +29,13 @@ SIMULATED_TRUCKS = [
 ]
 
 CAMERAS = [
-    "North Entry LPR Camera",
-    "South Exit LPR Camera",
-    "Central Permit Camera",
-    "West Lane LPR Camera",
-    "Violation Review Camera",
-    "Short-Term Parking Camera",
-    "East Perimeter LPR Camera",
+    "North Entry LPR Sensor",
+    "South Exit LPR Sensor",
+    "Central Permit Sensor",
+    "West Lane LPR Sensor",
+    "Violation Review Sensor",
+    "Short-Term Parking Sensor",
+    "East Perimeter LPR Sensor",
 ]
 
 OPS_SITE_COORDINATES = {
@@ -76,7 +58,7 @@ SAMPLE_OPS_DEVICES = [
         "disk_percent": 62.0,
         "temperature_c": 57.5,
         "lpr_service": "active",
-        "camera_rtsp": "reachable",
+        "lpr_sensor_status": "online",
         "teamviewer_status": "active",
         "public_ip": "198.51.100.22",
         "private_ip": "10.20.4.12",
@@ -96,7 +78,7 @@ SAMPLE_OPS_DEVICES = [
         "disk_percent": 86.0,
         "temperature_c": 63.4,
         "lpr_service": "active",
-        "camera_rtsp": "reachable",
+        "lpr_sensor_status": "online",
         "teamviewer_status": "active",
         "public_ip": "203.0.113.40",
         "private_ip": "10.20.8.21",
@@ -116,7 +98,7 @@ SAMPLE_OPS_DEVICES = [
         "disk_percent": 74.0,
         "temperature_c": None,
         "lpr_service": "inactive",
-        "camera_rtsp": "unreachable",
+        "lpr_sensor_status": "offline",
         "teamviewer_status": "inactive",
         "public_ip": "203.0.113.88",
         "private_ip": "10.40.2.19",
@@ -142,13 +124,13 @@ SAMPLE_OPS_ALERTS = [
 ]
 
 CAMERA_LOCATIONS = [
-    {"name": "North Entry LPR Camera", "top": 5, "left": 58, "short_name": "North"},
-    {"name": "South Exit LPR Camera", "top": 93, "left": 30, "short_name": "South"},
-    {"name": "Central Permit Camera", "top": 46, "left": 63, "short_name": "Central"},
-    {"name": "West Lane LPR Camera", "top": 40, "left": 16, "short_name": "West"},
-    {"name": "Violation Review Camera", "top": 48, "left": 36, "short_name": "Review"},
-    {"name": "Short-Term Parking Camera", "top": 51, "left": 53, "short_name": "Short"},
-    {"name": "East Perimeter LPR Camera", "top": 44, "left": 89, "short_name": "East"},
+    {"name": "North Entry LPR Sensor", "top": 5, "left": 58, "short_name": "North"},
+    {"name": "South Exit LPR Sensor", "top": 93, "left": 30, "short_name": "South"},
+    {"name": "Central Permit Sensor", "top": 46, "left": 63, "short_name": "Central"},
+    {"name": "West Lane LPR Sensor", "top": 40, "left": 16, "short_name": "West"},
+    {"name": "Violation Review Sensor", "top": 48, "left": 36, "short_name": "Review"},
+    {"name": "Short-Term Parking Sensor", "top": 51, "left": 53, "short_name": "Short"},
+    {"name": "East Perimeter LPR Sensor", "top": 44, "left": 89, "short_name": "East"},
 ]
 
 LOT_ZONES = {
@@ -262,7 +244,7 @@ def init_ops_tables(conn):
             disk_percent REAL,
             temperature_c REAL,
             lpr_service TEXT,
-            camera_rtsp TEXT,
+            lpr_sensor_status TEXT,
             teamviewer_status TEXT,
             public_ip TEXT,
             private_ip TEXT,
@@ -287,6 +269,16 @@ def init_ops_tables(conn):
         )
         """
     )
+
+    columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(lpr_device_heartbeats)").fetchall()
+    }
+
+    if "lpr_sensor_status" not in columns:
+        conn.execute(
+            "ALTER TABLE lpr_device_heartbeats ADD COLUMN lpr_sensor_status TEXT DEFAULT 'unknown'"
+        )
 
     heartbeat_count = conn.execute(
         "SELECT COUNT(*) AS count FROM lpr_device_heartbeats"
@@ -413,13 +405,13 @@ def camera_for_truck(truck_number):
         return random.choice(CAMERAS)
 
     zone_camera_map = {
-        "lime": "West Lane LPR Camera",
-        "red": "Violation Review Camera",
-        "blue": "Short-Term Parking Camera",
-        "amber": "Central Permit Camera",
-        "green": "East Perimeter LPR Camera",
-        "purple_north": "North Entry LPR Camera",
-        "purple_south": "South Exit LPR Camera",
+        "lime": "West Lane LPR Sensor",
+        "red": "Violation Review Sensor",
+        "blue": "Short-Term Parking Sensor",
+        "amber": "Central Permit Sensor",
+        "green": "East Perimeter LPR Sensor",
+        "purple_north": "North Entry LPR Sensor",
+        "purple_south": "South Exit LPR Sensor",
     }
 
     return zone_camera_map[position["zone_key"]]
@@ -474,7 +466,7 @@ def classify_device_health(device):
         (device.get("memory_percent") or 0) >= 90,
         (device.get("temperature_c") or 0) >= 78,
         device.get("lpr_service") not in ("active", "running", "ok"),
-        device.get("camera_rtsp") not in ("reachable", "online", "ok"),
+        device.get("lpr_sensor_status") not in ("online", "ok", "reporting"),
         device.get("teamviewer_status") not in ("active", "running", "ok"),
     ]
 
@@ -500,7 +492,7 @@ def upsert_ops_device(conn, payload):
             disk_percent,
             temperature_c,
             lpr_service,
-            camera_rtsp,
+            lpr_sensor_status,
             teamviewer_status,
             public_ip,
             private_ip,
@@ -519,7 +511,7 @@ def upsert_ops_device(conn, payload):
             disk_percent = excluded.disk_percent,
             temperature_c = excluded.temperature_c,
             lpr_service = excluded.lpr_service,
-            camera_rtsp = excluded.camera_rtsp,
+            lpr_sensor_status = excluded.lpr_sensor_status,
             teamviewer_status = excluded.teamviewer_status,
             public_ip = excluded.public_ip,
             private_ip = excluded.private_ip,
@@ -539,7 +531,7 @@ def upsert_ops_device(conn, payload):
             payload.get("disk_percent"),
             payload.get("temperature_c"),
             payload.get("lpr_service"),
-            payload.get("camera_rtsp"),
+            payload.get("lpr_sensor_status"),
             payload.get("teamviewer_status"),
             payload.get("public_ip"),
             payload.get("private_ip"),
@@ -851,56 +843,6 @@ def ops_heartbeat_api():
     device["health"] = classify_device_health(device)
 
     return jsonify({"status": "accepted", "device": device}), 202
-
-
-def doorbell_config():
-    config = Config(
-        project_id=os.environ.get("GOOGLE_DEVICE_ACCESS_PROJECT_ID", DEFAULT_PROJECT_ID),
-        client_id=os.environ.get("GOOGLE_OAUTH_CLIENT_ID", DEFAULT_CLIENT_ID),
-        client_secret=os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", DEFAULT_CLIENT_SECRET),
-        client_secret_file=os.environ.get(
-            "GOOGLE_OAUTH_CLIENT_SECRET_FILE",
-            DEFAULT_CLIENT_SECRET_FILE,
-        ),
-        refresh_token=os.environ.get("GOOGLE_REFRESH_TOKEN", DEFAULT_REFRESH_TOKEN),
-        access_token=os.environ.get("GOOGLE_ACCESS_TOKEN", DEFAULT_ACCESS_TOKEN),
-        timeout=float(os.environ.get("GOOGLE_SDM_TIMEOUT", "30")),
-    )
-
-    if config.client_secret_file:
-        load_oauth_client_file(config)
-
-    return config
-
-
-@app.route("/doorbell")
-def doorbell():
-    return render_template("doorbell.html")
-
-
-@app.route("/api/doorbell/webrtc", methods=["POST"])
-def doorbell_webrtc():
-    payload = request.get_json(silent=True) or {}
-    offer_sdp = payload.get("offerSdp")
-
-    if not offer_sdp:
-        return jsonify({"error": "Missing offerSdp."}), 400
-
-    config = doorbell_config()
-    device_name = os.environ.get("GOOGLE_SDM_DEVICE", DEFAULT_DEVICE_NAME)
-
-    if not device_name:
-        return jsonify({"error": "Missing GOOGLE_SDM_DEVICE."}), 500
-
-    device = {"name": device_name}
-
-    try:
-        access_token = refresh_access_token(config)
-        response = generate_webrtc_answer(config, access_token, device, offer_sdp)
-    except DoorbellError as error:
-        return jsonify({"error": str(error)}), 502
-
-    return jsonify(response.get("results", {}))
 
 
 @app.route("/snapshots/<path:filename>")
