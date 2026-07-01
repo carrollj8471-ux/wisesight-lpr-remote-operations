@@ -1,0 +1,12 @@
+services:
+  wisesight-ops:
+    image: python:3.11-slim
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python app.py"
+    environment:
+      PORT: "5000"
+      OPS_AGENT_TOKEN: "dev-agent-token"
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app

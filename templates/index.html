@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+        WiseSight LPR Remote Operations
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body>
+
+<header class="app-header">
+
+    <div class="brand-block">
+        <div>
+            <p class="eyebrow">WiseSight LPR Remote Operations</p>
+            <h1>Enforcement Operations</h1>
+        </div>
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Company logo"
+            class="company-logo"
+        >
+    </div>
+
+    <div class="header-actions">
+        <a class="header-link" href="{{ url_for('operations') }}">Remote Ops</a>
+        <a class="header-link" href="{{ url_for('doorbell') }}">Front Door Live</a>
+        <div class="header-status">
+            <span class="status-dot"></span>
+            Live Demo
+        </div>
+    </div>
+
+</header>
+
+<main class="container">
+
+    <section class="metric-grid">
+
+        <article class="metric-card">
+            <span>Tracked Plates</span>
+            <strong>{{ summary.active_plates }}</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Avg Confidence</span>
+            <strong>{{ summary.average_confidence }}%</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Active Cameras</span>
+            <strong>{{ summary.camera_count }}</strong>
+        </article>
+
+        <article class="metric-card wide">
+            <span>Latest Read</span>
+            <strong>{{ summary.last_update }}</strong>
+        </article>
+
+    </section>
+
+    <section class="dashboard-grid">
+
+        <div class="left-rail">
+
+            <section class="panel search-panel">
+
+                <div class="panel-heading">
+                    <h2>Plate Lookup</h2>
+                    <span>LPR/OCR read review</span>
+                </div>
+
+                <form method="GET" class="search-form">
+
+                    <input
+                        type="text"
+                        name="plate"
+                        value="{{ plate_query }}"
+                        placeholder="KW24102"
+                    >
+
+                    <button type="submit">
+                        Search
+                    </button>
+
+                </form>
+
+                {% if result %}
+
+                <div class="result-card">
+
+                    <div class="result-header">
+                        <h3>{{ result['plate_number'] }}</h3>
+                        <span>{{ (result['confidence'] * 100)|round }}%</span>
+                    </div>
+
+                    <dl>
+                        <div>
+                            <dt>Location</dt>
+                            <dd>{{ result['zone'] }}</dd>
+                        </div>
+                        <div>
+                            <dt>Camera</dt>
+                            <dd>{{ result['camera_name'] or 'Pending camera update' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Last Seen</dt>
+                            <dd>{{ result['last_seen'] }}</dd>
+                        </div>
+                    </dl>
+
+                    <img
+                        src="{{ url_for('snapshots', filename=result['snapshot_file']) }}"
+                        alt="Snapshot for plate {{ result['plate_number'] }}"
+                        class="snapshot"
+                    >
+
+                </div>
+
+                {% elif plate_query %}
+
+                <div class="empty-state">
+                    No active plate read was found for {{ plate_query }}.
+                </div>
+
+                {% endif %}
+
+            </section>
+
+            <section class="panel camera-panel">
+
+                <div class="panel-heading">
+                    <h2>Camera Network</h2>
+                    <span>{{ summary.camera_count }} online</span>
+                </div>
+
+                <div class="camera-list camera-list-hud">
+                    {% for camera in summary.camera_status %}
+                    <div class="camera-row">
+                        <div>
+                            <strong>{{ camera.name }}</strong>
+                            <span>{{ camera.latest_read }}</span>
+                        </div>
+                        <span class="camera-pill">{{ camera.reads }} reads</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </section>
+
+        </div>
+
+        <section class="panel lot-panel">
+
+            <div class="panel-heading">
+                <h2>Enforcement Area Overlay</h2>
+                {% if result %}
+                <span>Showing {{ result['plate_number'] }}</span>
+                {% else %}
+                <span>Search a plate to show its last read</span>
+                {% endif %}
+            </div>
+
+            <div class="lot-workspace">
+
+                <div class="lot-image-container">
+
+                    <img
+                        src="{{ url_for('static', filename='images/demo_lot.png') }}"
+                        alt="Parking enforcement area overview"
+                        class="lot-image"
+                    >
+
+                    {% for zone in lot_zones %}
+                    <span
+                        class="zone-label"
+                        style="top: {{ zone.label_top }}%; left: {{ zone.label_left }}%; background: {{ zone.color }};"
+                    >
+                        {{ zone.name }}
+                    </span>
+                    {% endfor %}
+
+                    {% for camera in camera_locations %}
+                    <span
+                        class="camera-marker"
+                        style="top: {{ camera.top }}%; left: {{ camera.left }}%;"
+                        aria-label="{{ camera.name }}"
+                    >
+                        <span class="camera-tooltip">
+                            <strong>{{ camera.name }}</strong>
+                            <span>{{ camera.short_name }} coverage point</span>
+                        </span>
+                    </span>
+                    {% endfor %}
+
+                    {% for plate in display_plates %}
+                    <span
+                        class="plate-target-ring"
+                        style="top: {{ plate.position.top }}%; left: {{ plate.position.left }}%; border-color: {{ plate.zone_color }};"
+                    ></span>
+                    <a
+                        class="plate-dot"
+                        style="top: {{ plate.position.top }}%; left: {{ plate.position.left }}%; border-color: {{ plate.zone_color }};"
+                        href="{{ url_for('index', plate=plate.plate_number) }}"
+                        title="{{ plate.plate_number }} - {{ plate.zone }}"
+                    >
+                        {{ plate.plate_number }}
+                    </a>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <div class="zone-legend">
+                {% for zone in lot_zones %}
+                <span>
+                    <i style="background: {{ zone.color }};"></i>
+                    {{ zone.name }}
+                </span>
+                {% endfor %}
+                <span>
+                    <i class="camera-key"></i>
+                    Camera
+                </span>
+            </div>
+
+        </section>
+
+    </section>
+
+    <section class="panel recent-panel">
+
+        <div class="panel-heading">
+            <h2>Recent Reads</h2>
+            <span>Auto refresh every 20 seconds</span>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Plate</th>
+                        <th>Location</th>
+                        <th>Camera</th>
+                        <th>Confidence</th>
+                        <th>Last Seen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plate in plates %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('index', plate=plate.plate_number) }}">
+                                {{ plate.plate_number }}
+                            </a>
+                        </td>
+                        <td>{{ plate.zone }}</td>
+                        <td>{{ plate.camera_name or 'Pending camera update' }}</td>
+                        <td>
+                            <span class="confidence">{{ (plate.confidence * 100)|round }}%</span>
+                        </td>
+                        <td>{{ plate.last_seen }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+[Unit]
+Description=WiseSight LPR heartbeat agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/wisesight/lpr-agent.env
+WorkingDirectory=/opt/wisesight-lpr-remote-ops
+ExecStart=/usr/bin/python3 /opt/wisesight-lpr-remote-ops/agent/lpr_agent.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

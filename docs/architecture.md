@@ -1,0 +1,36 @@
+# WiseSight LPR Remote Operations Architecture
+
+## Overview
+
+WiseSight LPR Remote Operations combines a parking enforcement review dashboard with a lightweight remote operations layer for LPR edge deployments. The central Flask app receives heartbeats from field devices, stores the latest health state in SQLite, and renders a multi-site operations dashboard.
+
+## Components
+
+- `agent/lpr_agent.py`: Linux edge-device heartbeat agent.
+- `app.py`: Flask web app, heartbeat API, device health model, and dashboard routes.
+- `templates/operations.html`: Remote operations dashboard.
+- `scripts/check-camera-stream.sh`: RTSP availability check using `ffprobe`.
+- `scripts/health-check.sh`: On-device Linux health snapshot.
+- `configs/example-sites.yaml`: Example site inventory model.
+- `agent/lpr-agent.service`: systemd unit for running the agent continuously.
+
+## Data Flow
+
+1. A Jetson, mini PC, or camera server runs the heartbeat agent every 60 seconds.
+2. The agent collects OS, service, camera, and last-plate signals.
+3. The agent posts JSON to `/api/ops/heartbeat`.
+4. The Flask app upserts the device record in `lpr_device_heartbeats`.
+5. The dashboard classifies devices as online, warning, or offline.
+6. Operators inspect site health, device metrics, and open incidents from `/operations`.
+
+## Health Model
+
+Devices are marked:
+
+- `online` when the heartbeat is fresh and core services are active.
+- `warning` when disk, memory, temperature, camera, LPR, or remote-access checks need attention.
+- `offline` when the device reports offline or the heartbeat is stale for more than 10 minutes.
+
+## Portfolio Value
+
+This project demonstrates Linux administration, edge-device monitoring, service recovery awareness, camera stream diagnostics, Flask API development, and production-style operational documentation.

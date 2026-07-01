@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+        WiseSight LPR Remote Operations
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body>
+
+<header class="app-header">
+
+    <div class="brand-block">
+        <div>
+            <p class="eyebrow">WiseSight LPR Remote Operations</p>
+            <h1>LPR Site Health</h1>
+        </div>
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Company logo"
+            class="company-logo"
+        >
+    </div>
+
+    <div class="header-actions">
+        <a class="header-link" href="{{ url_for('index') }}">Plate Lookup</a>
+        <a class="header-link" href="{{ url_for('doorbell') }}">Front Door Live</a>
+        <div class="header-status">
+            <span class="status-dot"></span>
+            Ops Demo
+        </div>
+    </div>
+
+</header>
+
+<main class="container">
+
+    <section class="metric-grid ops-metric-grid">
+
+        <article class="metric-card">
+            <span>Field Devices</span>
+            <strong>{{ summary.device_count }}</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Online</span>
+            <strong>{{ summary.online }}</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Warnings</span>
+            <strong>{{ summary.warning }}</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Offline</span>
+            <strong>{{ summary.offline }}</strong>
+        </article>
+
+        <article class="metric-card">
+            <span>Open Alerts</span>
+            <strong>{{ summary.open_alerts }}</strong>
+        </article>
+
+    </section>
+
+    <section class="ops-grid">
+
+        <section class="panel ops-map-panel">
+
+            <div class="panel-heading">
+                <h2>Multi-Site Map</h2>
+                <span>Latest heartbeat {{ summary.last_heartbeat }}</span>
+            </div>
+
+            <div class="ops-map">
+                <div class="ops-map-grid"></div>
+                {% for site in sites %}
+                <a
+                    class="site-marker {{ site.health }}"
+                    style="top: {{ site.coordinates.top }}%; left: {{ site.coordinates.left }}%;"
+                    href="#site-{{ site.site_id }}"
+                    title="{{ site.site_name }}"
+                >
+                    <span>{{ site.devices|length }}</span>
+                </a>
+                {% endfor %}
+            </div>
+
+            <div class="site-list">
+                {% for site in sites %}
+                <article id="site-{{ site.site_id }}" class="site-row">
+                    <div>
+                        <strong>{{ site.site_name }}</strong>
+                        <span>{{ site.devices|length }} devices monitored</span>
+                    </div>
+                    <span class="health-pill {{ site.health }}">{{ site.health }}</span>
+                </article>
+                {% endfor %}
+            </div>
+
+        </section>
+
+        <section class="panel alerts-panel">
+
+            <div class="panel-heading">
+                <h2>Open Incidents</h2>
+                <span>{{ summary.open_alerts }} active</span>
+            </div>
+
+            <div class="alert-list">
+                {% for alert in alerts %}
+                <article class="alert-row {{ alert.severity }}">
+                    <span>{{ alert.severity }}</span>
+                    <strong>{{ alert.device_id }}</strong>
+                    <p>{{ alert.message }}</p>
+                    <small>{{ alert.created_at }}</small>
+                </article>
+                {% else %}
+                <div class="empty-state">
+                    No open incidents.
+                </div>
+                {% endfor %}
+            </div>
+
+        </section>
+
+    </section>
+
+    <section class="panel recent-panel">
+
+        <div class="panel-heading">
+            <h2>Edge Device Heartbeats</h2>
+            <span>Agent posts to /api/ops/heartbeat</span>
+        </div>
+
+        <div class="device-grid">
+            {% for device in devices %}
+            <article class="device-card {{ device.health }}">
+                <div class="device-card-header">
+                    <div>
+                        <strong>{{ device.hostname or device.device_id }}</strong>
+                        <span>{{ device.site_name }} / {{ device.device_id }}</span>
+                    </div>
+                    <span class="health-pill {{ device.health }}">{{ device.health }}</span>
+                </div>
+
+                <dl class="device-stats">
+                    <div>
+                        <dt>CPU</dt>
+                        <dd>{{ device.cpu_percent or 0 }}%</dd>
+                    </div>
+                    <div>
+                        <dt>Memory</dt>
+                        <dd>{{ device.memory_percent or 0 }}%</dd>
+                    </div>
+                    <div>
+                        <dt>Disk</dt>
+                        <dd>{{ device.disk_percent or 0 }}%</dd>
+                    </div>
+                    <div>
+                        <dt>Temp</dt>
+                        <dd>{{ device.temperature_c or 'n/a' }} C</dd>
+                    </div>
+                    <div>
+                        <dt>LPR</dt>
+                        <dd>{{ device.lpr_service or 'unknown' }}</dd>
+                    </div>
+                    <div>
+                        <dt>Camera</dt>
+                        <dd>{{ device.camera_rtsp or 'unknown' }}</dd>
+                    </div>
+                    <div>
+                        <dt>Remote</dt>
+                        <dd>{{ device.teamviewer_status or 'unknown' }}</dd>
+                    </div>
+                    <div>
+                        <dt>Latency</dt>
+                        <dd>{{ device.latency_ms or 'n/a' }} ms</dd>
+                    </div>
+                </dl>
+
+                <div class="device-footer">
+                    <span>Last heartbeat: {{ device.last_heartbeat }}</span>
+                    <span>Last plate: {{ device.last_plate_seen or 'No recent plate' }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+    </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>
