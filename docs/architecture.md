@@ -33,3 +33,9 @@ Devices are marked:
 ## Portfolio Value
 
 This project demonstrates Linux administration, edge-device monitoring, service recovery awareness, passive LPR sensor status reporting, Flask API development, and production-style operational documentation.
+
+## Subprocess: Jetson Edge AI Operations
+
+The Jetson Edge AI Operations subprocess documents the lower-level device lifecycle required before an edge host can reliably participate in WiseSight LPR Remote Operations. It covers hardware baseline capture, NVIDIA L4T recovery, package holds, remote access readiness, user policy hardening, and system diagnostics.
+
+See `subprocesses/jetson-edge-ai-operations/README.md`.

@@ -54,6 +54,12 @@ python agent/lpr_agent.py --once --server-url http://127.0.0.1:5000/api/ops/hear
 
 ---
 
+## Operational Subprocesses
+
+- [Jetson Edge AI Operations Subprocess](subprocesses/jetson-edge-ai-operations/README.md) - documents ARM64 Jetson provisioning, NVIDIA L4T package recovery, remote access setup, password policy hardening, and repeatable field diagnostics.
+
+---
+
 ## Security Documentation
 
 - [Vulnerability Assessment Report](docs/vulnerability-assessment-report.md)
@@ -104,6 +110,9 @@ static/
 - js/app.js
 - snapshots/
 
+subprocesses/
+- jetson-edge-ai-operations/
+
 ---
 
 ## Install
@@ -145,3 +154,4 @@ http://127.0.0.1:5000/operations
 This project intentionally does not connect to cameras, open live feeds, request
 stream URLs, or store camera credentials. Edge devices report passive operational
 status such as `LPR_SENSOR_STATUS`, `lpr_service`, and `last_plate_seen`.
+
