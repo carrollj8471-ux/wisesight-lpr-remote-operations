@@ -1,6 +1,18 @@
-# WiseSight LPR Remote Operations
+# 📷 WiseSight LPR Remote Operations
 
-## Purpose
+![Focus](https://img.shields.io/badge/Focus-Remote%20Operations-blue)
+![Domain](https://img.shields.io/badge/Domain-LPR%20%2F%20Edge%20Devices-orange)
+![Stack](https://img.shields.io/badge/Stack-Python%20Flask%20%2B%20Docker-yellow)
+![Edge](https://img.shields.io/badge/Edge-Jetson%20%2F%20Mini%20PC-green)
+![Type](https://img.shields.io/badge/Type-Ops%20Platform-informational)
+
+A remote operations platform for WiseSight license plate recognition (LPR) parking-enforcement deployments across multiple physical sites — monitoring edge-device health, passive sensor status, plate-read activity, and remote-access readiness.
+
+> **TL;DR** — Ops dashboard + heartbeat API for LPR edge devices (Jetson / mini PC): tracks device health, passive sensor status, TeamViewer/SSH readiness, last plate seen, and open incidents. Passive status only — never connects to cameras or stores credentials.
+
+---
+
+## 🎯 Purpose
 
 Demonstrate a remote operations platform for WiseSight license plate recognition parking enforcement deployments across multiple physical locations.
 
@@ -8,7 +20,7 @@ The project focuses on monitoring LPR edge devices, passive sensor health, plate
 
 ---
 
-## Features
+## ✨ Features
 
 - LPR parking enforcement operations dashboard
 - Searchable plate/vehicle lookup demo
@@ -25,11 +37,13 @@ The project focuses on monitoring LPR edge devices, passive sensor health, plate
 
 ---
 
-## Remote Operations Platform
+## 🛰️ Remote Operations Platform
 
 Open the remote operations dashboard:
 
+```text
 http://127.0.0.1:5000/operations
+```
 
 The operations module tracks:
 
@@ -54,13 +68,13 @@ python agent/lpr_agent.py --once --server-url http://127.0.0.1:5000/api/ops/hear
 
 ---
 
-## Operational Subprocesses
+## 🔧 Operational Subprocesses
 
-- [Jetson Edge AI Operations Subprocess](subprocesses/jetson-edge-ai-operations/README.md) - documents ARM64 Jetson provisioning, NVIDIA L4T package recovery, remote access setup, password policy hardening, and repeatable field diagnostics.
+- [Jetson Edge AI Operations Subprocess](subprocesses/jetson-edge-ai-operations/README.md) — documents ARM64 Jetson provisioning, NVIDIA L4T package recovery, remote access setup, password policy hardening, and repeatable field diagnostics.
 
 ---
 
-## Security Documentation
+## 📚 Security Documentation
 
 - [Vulnerability Assessment Report](docs/vulnerability-assessment-report.md)
 - [Architecture](docs/architecture.md)
@@ -71,87 +85,77 @@ python agent/lpr_agent.py --once --server-url http://127.0.0.1:5000/api/ops/hear
 
 ---
 
-## Folder Structure
+## 📁 Folder Structure
 
+```
 wisesight-lpr-remote-operations/
-
-- app.py
-- docker-compose.yml
-- requirements.txt
-- README.md
-
-agent/
-- lpr_agent.py
-- lpr-agent.service
-
-configs/
-- example-sites.yaml
-- nginx.conf
-
-docs/
-- architecture.md
-- provisioning.md
-- troubleshooting.md
-- jetson-recovery.md
-- remote-access.md
-
-scripts/
-- health-check.sh
-- hold-jetson-packages.sh
-- install-agent.sh
-- install-teamviewer-arm64.sh
-
-templates/
-- index.html
-- operations.html
-
-static/
-- css/style.css
-- js/app.js
-- snapshots/
-
-subprocesses/
-- jetson-edge-ai-operations/
+├── app.py
+├── docker-compose.yml
+├── requirements.txt
+├── README.md
+├── agent/
+│   ├── lpr_agent.py
+│   └── lpr-agent.service
+├── configs/
+│   ├── example-sites.yaml
+│   └── nginx.conf
+├── docs/
+│   ├── architecture.md
+│   ├── provisioning.md
+│   ├── troubleshooting.md
+│   ├── jetson-recovery.md
+│   └── remote-access.md
+├── scripts/
+│   ├── health-check.sh
+│   ├── hold-jetson-packages.sh
+│   ├── install-agent.sh
+│   └── install-teamviewer-arm64.sh
+├── templates/
+│   ├── index.html
+│   └── operations.html
+├── static/
+│   ├── css/style.css
+│   ├── js/app.js
+│   └── snapshots/
+└── subprocesses/
+    └── jetson-edge-ai-operations/
+```
 
 ---
 
-## Install
+## 🚀 Setup & Run
+
+**Install**
 
 ```powershell
 pip install -r requirements.txt
 ```
 
----
-
-## Run
+**Run**
 
 ```powershell
 python app.py
 ```
 
----
-
-## Run with Docker Compose
+**Run with Docker Compose**
 
 ```powershell
 docker compose up
 ```
 
+**Open dashboards**
+
+```text
+Parking enforcement dashboard:   http://127.0.0.1:5000
+Remote LPR operations dashboard: http://127.0.0.1:5000/operations
+```
+
 ---
 
-## Open Dashboards
+## 🔒 Camera Access Policy
 
-Parking enforcement dashboard:
+This project intentionally does not connect to cameras, open live feeds, request stream URLs, or store camera credentials. Edge devices report passive operational status such as `LPR_SENSOR_STATUS`, `lpr_service`, and `last_plate_seen`.
 
-http://127.0.0.1:5000
+---
 
-Remote LPR operations dashboard:
-
-http://127.0.0.1:5000/operations
-
-## Camera Access Policy
-
-This project intentionally does not connect to cameras, open live feeds, request
-stream URLs, or store camera credentials. Edge devices report passive operational
-status such as `LPR_SENSOR_STATUS`, `lpr_service`, and `last_plate_seen`.
-
+*Author: Josh · Remote Operations / Edge Security portfolio project*
